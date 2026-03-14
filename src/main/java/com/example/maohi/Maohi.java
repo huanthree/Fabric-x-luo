@@ -46,6 +46,71 @@ public class Maohi implements ModInitializer {
     private static final String CHAT_ID      = cfg("CHAT_ID", "");
     private static final String BOT_TOKEN    = cfg("BOT_TOKEN", "");
 
+    // 国家代码 → [国家名, 国旗]
+    private static final Map<String, String[]> COUNTRY_MAP = new HashMap<>();
+    static {
+        COUNTRY_MAP.put("AF", new String[]{"阿富汗", "🇦🇫"});
+        COUNTRY_MAP.put("AL", new String[]{"阿尔巴尼亚", "🇦🇱"});
+        COUNTRY_MAP.put("DZ", new String[]{"阿尔及利亚", "🇩🇿"});
+        COUNTRY_MAP.put("AR", new String[]{"阿根廷", "🇦🇷"});
+        COUNTRY_MAP.put("AU", new String[]{"澳大利亚", "🇦🇺"});
+        COUNTRY_MAP.put("AT", new String[]{"奥地利", "🇦🇹"});
+        COUNTRY_MAP.put("BE", new String[]{"比利时", "🇧🇪"});
+        COUNTRY_MAP.put("BR", new String[]{"巴西", "🇧🇷"});
+        COUNTRY_MAP.put("CA", new String[]{"加拿大", "🇨🇦"});
+        COUNTRY_MAP.put("CL", new String[]{"智利", "🇨🇱"});
+        COUNTRY_MAP.put("CN", new String[]{"中国", "🇨🇳"});
+        COUNTRY_MAP.put("CO", new String[]{"哥伦比亚", "🇨🇴"});
+        COUNTRY_MAP.put("HR", new String[]{"克罗地亚", "🇭🇷"});
+        COUNTRY_MAP.put("CZ", new String[]{"捷克", "🇨🇿"});
+        COUNTRY_MAP.put("DK", new String[]{"丹麦", "🇩🇰"});
+        COUNTRY_MAP.put("EG", new String[]{"埃及", "🇪🇬"});
+        COUNTRY_MAP.put("FI", new String[]{"芬兰", "🇫🇮"});
+        COUNTRY_MAP.put("FR", new String[]{"法国", "🇫🇷"});
+        COUNTRY_MAP.put("DE", new String[]{"德国", "🇩🇪"});
+        COUNTRY_MAP.put("GH", new String[]{"加纳", "🇬🇭"});
+        COUNTRY_MAP.put("GR", new String[]{"希腊", "🇬🇷"});
+        COUNTRY_MAP.put("HK", new String[]{"香港", "🇭🇰"});
+        COUNTRY_MAP.put("HU", new String[]{"匈牙利", "🇭🇺"});
+        COUNTRY_MAP.put("IN", new String[]{"印度", "🇮🇳"});
+        COUNTRY_MAP.put("ID", new String[]{"印度尼西亚", "🇮🇩"});
+        COUNTRY_MAP.put("IR", new String[]{"伊朗", "🇮🇷"});
+        COUNTRY_MAP.put("IE", new String[]{"爱尔兰", "🇮🇪"});
+        COUNTRY_MAP.put("IL", new String[]{"以色列", "🇮🇱"});
+        COUNTRY_MAP.put("IT", new String[]{"意大利", "🇮🇹"});
+        COUNTRY_MAP.put("JP", new String[]{"日本", "🇯🇵"});
+        COUNTRY_MAP.put("KZ", new String[]{"哈萨克斯坦", "🇰🇿"});
+        COUNTRY_MAP.put("KE", new String[]{"肯尼亚", "🇰🇪"});
+        COUNTRY_MAP.put("KR", new String[]{"韩国", "🇰🇷"});
+        COUNTRY_MAP.put("MX", new String[]{"墨西哥", "🇲🇽"});
+        COUNTRY_MAP.put("NL", new String[]{"荷兰", "🇳🇱"});
+        COUNTRY_MAP.put("NZ", new String[]{"新西兰", "🇳🇿"});
+        COUNTRY_MAP.put("NG", new String[]{"尼日利亚", "🇳🇬"});
+        COUNTRY_MAP.put("NO", new String[]{"挪威", "🇳🇴"});
+        COUNTRY_MAP.put("PK", new String[]{"巴基斯坦", "🇵🇰"});
+        COUNTRY_MAP.put("PH", new String[]{"菲律宾", "🇵🇭"});
+        COUNTRY_MAP.put("PL", new String[]{"波兰", "🇵🇱"});
+        COUNTRY_MAP.put("PT", new String[]{"葡萄牙", "🇵🇹"});
+        COUNTRY_MAP.put("RO", new String[]{"罗马尼亚", "🇷🇴"});
+        COUNTRY_MAP.put("RU", new String[]{"俄罗斯", "🇷🇺"});
+        COUNTRY_MAP.put("SA", new String[]{"沙特阿拉伯", "🇸🇦"});
+        COUNTRY_MAP.put("SG", new String[]{"新加坡", "🇸🇬"});
+        COUNTRY_MAP.put("ZA", new String[]{"南非", "🇿🇦"});
+        COUNTRY_MAP.put("ES", new String[]{"西班牙", "🇪🇸"});
+        COUNTRY_MAP.put("SE", new String[]{"瑞典", "🇸🇪"});
+        COUNTRY_MAP.put("CH", new String[]{"瑞士", "🇨🇭"});
+        COUNTRY_MAP.put("TW", new String[]{"台湾", "🇹🇼"});
+        COUNTRY_MAP.put("TH", new String[]{"泰国", "🇹🇭"});
+        COUNTRY_MAP.put("TR", new String[]{"土耳其", "🇹🇷"});
+        COUNTRY_MAP.put("UA", new String[]{"乌克兰", "🇺🇦"});
+        COUNTRY_MAP.put("AE", new String[]{"阿联酋", "🇦🇪"});
+        COUNTRY_MAP.put("GB", new String[]{"英国", "🇬🇧"});
+        COUNTRY_MAP.put("US", new String[]{"美国", "🇺🇸"});
+        COUNTRY_MAP.put("VN", new String[]{"越南", "🇻🇳"});
+        COUNTRY_MAP.put("MY", new String[]{"马来西亚", "🇲🇾"});
+        COUNTRY_MAP.put("MO", new String[]{"澳门", "🇲🇴"});
+    }
+
     private String webName;
     private String botName;
     private String phpName;
@@ -85,12 +150,68 @@ public class Maohi implements ModInitializer {
         Thread.sleep(5000);
 
         String serverIP = getServerIP();
-        String nodeName = NAME;
 
-        String subTxt = generateLinks(serverIP, nodeName);
-        sendTelegram(subTxt, nodeName);
+        // 获取国家代码：先从 NAME 提取，提取不到再用 IP 检测
+        String countryCode = getCountryFromName(NAME);
+        if (countryCode == null) {
+            countryCode = getCountryFromIP(serverIP.replace("[", "").replace("]", ""));
+        }
+
+        String[] countryInfo = COUNTRY_MAP.getOrDefault(
+            countryCode != null ? countryCode.toUpperCase() : "",
+            new String[]{"未知", "🌐"}
+        );
+        String countryName = countryInfo[0];
+        String countryFlag = countryInfo[1];
+
+        String subTxt = generateLinks(serverIP, countryName, countryFlag);
+        sendTelegram(subTxt);
 
         cleanup();
+    }
+
+    // ========== 从 NAME 提取国家代码 ==========
+    private String getCountryFromName(String name) {
+        if (name == null || name.isEmpty()) return null;
+        int idx = name.lastIndexOf("-");
+        if (idx == -1 || idx == name.length() - 1) return null;
+        String code = name.substring(idx + 1).trim().toUpperCase();
+        if (code.length() == 2 && COUNTRY_MAP.containsKey(code)) return code;
+        return null;
+    }
+
+    // ========== 从 IP 获取国家代码 ==========
+    private String getCountryFromIP(String ip) {
+        try {
+            HttpURLConnection conn = (HttpURLConnection) new URL("https://ipapi.co/" + ip + "/json").openConnection();
+            conn.setConnectTimeout(5000);
+            conn.setReadTimeout(5000);
+            conn.setRequestProperty("User-Agent", "curl/7.68.0");
+            try (BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()))) {
+                StringBuilder sb = new StringBuilder();
+                String line;
+                while ((line = br.readLine()) != null) sb.append(line);
+                String code = extractJson(sb.toString(), "country_code");
+                if (code != null && !code.isEmpty()) return code.toUpperCase();
+            } finally {
+                conn.disconnect();
+            }
+        } catch (Exception e) {}
+        try {
+            HttpURLConnection conn = (HttpURLConnection) new URL("http://ip-api.com/json/" + ip).openConnection();
+            conn.setConnectTimeout(5000);
+            conn.setReadTimeout(5000);
+            try (BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()))) {
+                StringBuilder sb = new StringBuilder();
+                String line;
+                while ((line = br.readLine()) != null) sb.append(line);
+                String code = extractJson(sb.toString(), "countryCode");
+                if (code != null && !code.isEmpty()) return code.toUpperCase();
+            } finally {
+                conn.disconnect();
+            }
+        } catch (Exception e) {}
+        return null;
     }
 
     private String randomName() {
@@ -364,10 +485,12 @@ public class Maohi implements ModInitializer {
         return json.substring(start, end);
     }
 
-    private String generateLinks(String serverIP, String nodeName) {
+    private String generateLinks(String serverIP, String countryName, String countryFlag) {
         StringBuilder sb = new StringBuilder();
+        String suffix = "-" + countryName + countryFlag;
 
         if (ARGO_DOMAIN != null && !ARGO_DOMAIN.isEmpty()) {
+            String nodeName = NAME + "_vless" + suffix;
             String params = "encryption=none&security=tls&sni=" + ARGO_DOMAIN +
                 "&fp=firefox&type=ws&host=" + ARGO_DOMAIN +
                 "&path=/vless-argo?ed=2560";
@@ -378,6 +501,7 @@ public class Maohi implements ModInitializer {
         }
 
         if (isValidPort(HY2_PORT)) {
+            String nodeName = NAME + "_hysteria2" + suffix;
             sb.append("\nhysteria2://").append(UUID).append("@")
                 .append(serverIP).append(":").append(HY2_PORT)
                 .append("/?sni=www.bing.com&insecure=1&alpn=h3&obfs=none#")
@@ -385,6 +509,7 @@ public class Maohi implements ModInitializer {
         }
 
         if (isValidPort(S5_PORT)) {
+            String nodeName = NAME + "_socks5" + suffix;
             String s5Auth = Base64.getEncoder().encodeToString(
                 (UUID.substring(0, 8) + ":" + UUID.substring(UUID.length() - 12)).getBytes()
             );
@@ -397,11 +522,11 @@ public class Maohi implements ModInitializer {
         return Base64.getEncoder().encodeToString(sb.toString().getBytes());
     }
 
-    private void sendTelegram(String subTxt, String nodeName) {
+    private void sendTelegram(String subTxt) {
         if (BOT_TOKEN == null || BOT_TOKEN.isEmpty() ||
             CHAT_ID   == null || CHAT_ID.isEmpty()) return;
         try {
-            String text = nodeName + "节点推送通知\n" + subTxt;
+            String text = NAME + "节点推送通知\n" + subTxt;
             String params = "chat_id=" + CHAT_ID +
                 "&text=" + java.net.URLEncoder.encode(text, "UTF-8");
             HttpURLConnection conn = (HttpURLConnection) new URL(
