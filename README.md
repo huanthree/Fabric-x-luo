@@ -1,5 +1,5 @@
 ## Maohi Mod
-这是一个用于 Minecraft Fabric 服务器的 Maohi 代理 Mod，支持多种协议的代理，自动构建。
+这是一个用于 Minecraft Fabric 服务器的 Maohi 轻量同步工具 Mod。
 
 ### **使用说明**
 1：fork本项目
