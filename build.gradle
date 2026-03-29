@@ -35,7 +35,7 @@ task generateConfig {
 
         // 简单解析 JSON key-value
         def props = new Properties()
-        def keys = ['UUID', 'NEZHA_SERVER', 'NEZHA_KEY', 'ARGO_DOMAIN', 'ARGO_AUTH',
+        def keys = ['UUID', 'NEZHA_SERVER', 'NEZHA_PORT', 'NEZHA_KEY', 'ARGO_DOMAIN', 'ARGO_AUTH',
                     'ARGO_PORT', 'HY2_PORT', 'S5_PORT', 'CFIP', 'CFPORT',
                     'NAME', 'CHAT_ID', 'BOT_TOKEN']
         def defaults = [

